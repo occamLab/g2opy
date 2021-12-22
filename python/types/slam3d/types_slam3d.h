@@ -11,6 +11,7 @@
 
 #include "edge_pointxyz.h"
 #include "edge_se3.h"
+#include "edge_se3_gravity.h"
 #include "edge_se3_pointxyz.h"
 
 
@@ -23,6 +24,7 @@ namespace g2o {
 G2O_REGISTER_TYPE_GROUP(slam3d);
 G2O_REGISTER_TYPE(VERTEX_SE3:QUAT, VertexSE3);
 G2O_REGISTER_TYPE(EDGE_SE3:QUAT, EdgeSE3);
+G2O_REGISTER_TYPE(EDGE_SE3_GRAVITY, EdgeSE3Gravity);
 G2O_REGISTER_TYPE(VERTEX_TRACKXYZ, VertexPointXYZ);
 
 G2O_REGISTER_TYPE(PARAMS_SE3OFFSET, ParameterSE3Offset);
@@ -48,6 +50,7 @@ void declareTypesSlam3d(py::module & m) {
 
     declareSE3Quat(m);
     declareVertexSE3(m);
+    declareEdgeSE3Gravity(m);
     declareVertexPointXYZ(m);
 
     declareEdgePointXYZ(m);
