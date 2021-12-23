@@ -15,15 +15,17 @@ args = parser.parse_args()
 
 def populate_graph(optimizer):
     vert1_estimate = Isometry3d()
-    vert1_estimate.set_rotation(Quaternion(np.cos(np.pi/4), 0.0*np.sin(np.pi/4), 1.0*np.sin(np.pi/4), 0.0*np.sin(np.pi/4)))
+    rot_angle = np.pi/8
+    q = Quaternion(np.cos(rot_angle/2), 0.0*np.sin(rot_angle/2), 1.0*np.sin(rot_angle/2), 0.0*np.sin(rot_angle/2))
+    vert1_estimate.set_rotation(q)
     vert = VertexSE3()
     vert.set_id(0)
     vert.set_estimate(vert1_estimate)
 
     vert2_estimate = Isometry3d()
-    vert2_estimate.set_rotation(Quaternion(np.cos(np.pi/4), 0.0*np.sin(np.pi/4), 1.0*np.sin(np.pi/4), 0.0*np.sin(np.pi/4)))
-    # this is a translation in the rotated coordiante system
-    vert2_estimate.set_translation(np.array([1.0, 0.0, 0.0]))
+    vert2_estimate.set_rotation(q)
+    # this is a translation in the rotated coordinate system
+    vert2_estimate.set_translation(q * np.array([0.0, 0.0, 1.0]))
     vert2 = VertexSE3()
     vert2.set_id(1)
     vert2.set_estimate(vert2_estimate)
@@ -41,15 +43,13 @@ def populate_graph(optimizer):
 
     gravity_edge = EdgeSE3Gravity()
     gravity_edge.set_id(1)
-    # here we are assuming that device 'up' is the positive y-axis.  In the actual ARKit application
-    # it is the negative x-axis.  This is assuming the phone is held in portrait mode
-    # see: https://developer.apple.com/documentation/arkit/arcamera/2866108-transform
-    gravity_edge.set_measurement(np.array([0.0, 1.0, 0.0, 0.1, -np.sqrt(1.0-0.1**2), 0.0]))
+    # The gravity edge
+    gravity_edge.set_measurement(np.array([0.0, 1.0, 0.0, 0.1, np.sqrt(1.0-0.1**2), 0.0]))
     # this does not seem to be optimizing very well
     gravity_edge.set_information(np.eye(3))
     gravity_edge.set_vertex(0, vert)
     print(type(gravity_edge.measurement()))
-    optimizer.add_edge(gravity_edge)
+    #optimizer.add_edge(gravity_edge)
     print("edge error", edge.compute_error())
     optimizer.add_edge(edge)
 

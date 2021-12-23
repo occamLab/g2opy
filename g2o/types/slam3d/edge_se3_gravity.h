@@ -57,23 +57,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		Eigen::Vector3d measurement = _measurement.tail<3>();
 
 		Eigen::Vector3d ea;
-
-		Eigen::Matrix3d t = v1->estimate().linear();
-		ea[0] = atan2(t (2, 1), t (2, 2));
-		ea[1] = asin(-t (2, 0));
-		ea[2] = atan2(t (1, 0), t (0, 0));
-
-		Eigen::Matrix3d rot =
-		   (Eigen::AngleAxisd(ea[1], Eigen::Vector3d::UnitY()) *
-			Eigen::AngleAxisd(ea[0], Eigen::Vector3d::UnitX())).toRotationMatrix();
-
-		Eigen::Vector3d estimate = rot * -direction;
+		// Note: while the name is not very intuitive, .linear() extracts the rotation part of the transform (assuming the transform contains only rotation and translation)
+		// t contains the estimate of the up vector measured in the phone frame
+		Eigen::Matrix3d t = v1->estimate().linear().transpose();
+		Eigen::Vector3d estimate = t * direction;
 		_error = estimate - measurement;
 
-		//printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),
-		//  measurement[0], measurement[1], measurement[2],
-		//  estimate[0], estimate[1], estimate[2],
-		//  _error[0], _error[1], _error[2]);
+		printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),
+		  measurement[0], measurement[1], measurement[2],
+		  estimate[0], estimate[1], estimate[2],
+		  _error[0], _error[1], _error[2]);
     }
 
     // 6 values:
