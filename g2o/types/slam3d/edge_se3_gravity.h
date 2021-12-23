@@ -63,10 +63,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		Eigen::Vector3d estimate = t * direction;
 		_error = estimate - measurement;
 
-		printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),
+		/*printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),
 		  measurement[0], measurement[1], measurement[2],
 		  estimate[0], estimate[1], estimate[2],
-		  _error[0], _error[1], _error[2]);
+		  _error[0], _error[1], _error[2]);*/
     }
 
     // 6 values:
