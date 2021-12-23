@@ -56,11 +56,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		Eigen::Vector3d direction = _measurement.head<3>();
 		Eigen::Vector3d measurement = _measurement.tail<3>();
 
-		Eigen::Vector3d ea;
 		// Note: while the name is not very intuitive, .linear() extracts the rotation part of the transform (assuming the transform contains only rotation and translation)
-		// t contains the estimate of the up vector measured in the phone frame
-		Eigen::Matrix3d t = v1->estimate().linear().transpose();
-		Eigen::Vector3d estimate = t * direction;
+		// estimate contains the up vector measured in the phone frame
+		Eigen::Vector3d estimate = v1->estimate().linear().transpose() * direction;
 		_error = estimate - measurement;
 
 		/*printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),

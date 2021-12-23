@@ -23,7 +23,7 @@ def populate_graph(optimizer):
     vert.set_estimate(vert1_estimate)
 
     vert2_estimate = Isometry3d()
-    vert2_estimate.set_rotation(q)
+    #vert2_estimate.set_rotation(q)
     # this is a translation in the rotated coordinate system
     vert2_estimate.set_translation(q * np.array([0.0, 0.0, 1.0]))
     vert2 = VertexSE3()
@@ -49,7 +49,7 @@ def populate_graph(optimizer):
     gravity_edge.set_information(np.eye(3))
     gravity_edge.set_vertex(0, vert)
     print(type(gravity_edge.measurement()))
-    #optimizer.add_edge(gravity_edge)
+    optimizer.add_edge(gravity_edge)
     print("edge error", edge.compute_error())
     optimizer.add_edge(edge)
 
