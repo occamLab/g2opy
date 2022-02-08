@@ -15,12 +15,13 @@ void declareEdgeSE3Gravity(py::module & m) {
     py::class_<EdgeSE3Gravity, BaseUnaryEdge<3, Eigen::Matrix<double, 6, 1>, VertexSE3>>(m, "EdgeSE3Gravity")
         .def(py::init<>())
     
-        .def("compute_error", &EdgeSE3Gravity::computeError)
-   	.def("set_measurement", &EdgeSE3Gravity::setMeasurement)
-    //    .def("set_measurement_data", &EdgeSE3::setMeasurementData)
-     //   .def("get_measurement_data", &EdgeSE3::getMeasurementData)
-      //  .def("measurement_dimension", &EdgeSE3::measurementDimension)
-      //  .def("linearize_oplus", &EdgeSE3::linearizeOplus)
+    .def("compute_error", &EdgeSE3Gravity::computeError)
+    .def("set_measurement", &EdgeSE3Gravity::setMeasurement)
+    .def("set_odometry_is_se3_expmap", &EdgeSE3Gravity::setOdometryIsVertexSE3Expmap)
+    //  .def("set_measurement_data", &EdgeSE3::setMeasurementData)
+    //  .def("get_measurement_data", &EdgeSE3::getMeasurementData)
+    //  .def("measurement_dimension", &EdgeSE3::measurementDimension)
+    //  .def("linearize_oplus", &EdgeSE3::linearizeOplus)
     ;
 }
 

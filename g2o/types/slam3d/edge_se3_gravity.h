@@ -26,8 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * Adapted code from HDL graph slam:
- * https://github.com/koide3/hdl_graph_slam/blob/master/include/g2o/edge_se3_priorvec.hpp
+ * Adapted from: https://github.com/introlab/rtabmap/blob/c4d127cae40e8f92db07c05c0dadcaef4cb97d14/corelib/src/
+ * optimizer/g2o/edge_se3_gravity.h (which adapted code from HDL graph slam:
+ * https://github.com/koide3/hdl_graph_slam/blob/master/include/g2o/edge_se3_priorvec.hpp)
  */
 
 #ifndef G2O_EDGE_SE3_GRAVITY_H_
@@ -35,10 +36,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "g2o/core/base_unary_edge.h"
 #include "g2o/types/slam3d/vertex_se3.h"
+#include "g2o/types/sba/types_six_dof_expmap.h"
+#include "g2o/core/base_vertex.h"
+#include "g2o/core/base_binary_edge.h"
+#include "g2o/core/base_unary_edge.h"
+#include "g2o/types/slam3d/se3_ops.h"
+#include "g2o/types/sba/types_sba.h"
+#include <Eigen/Geometry>
 
 
   /*! \class EdgeSE3Gravity
-   * \brief g2o edge with gravity constraint
+   * \brief g2o edge with gravity constraint.
    */
   class EdgeSE3Gravity : public g2o::BaseUnaryEdge<3, Eigen::Matrix<double, 6, 1>, g2o::VertexSE3> {
   public:
@@ -49,22 +57,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     virtual bool read(std::istream& is) {return false;} // not implemented
     virtual bool write(std::ostream& os) const {return false;} // not implemented
 
-    // return the error estimate as a 3-vector
-    void computeError(){
-    	const g2o::VertexSE3* v1 = static_cast<const g2o::VertexSE3*>(_vertices[0]);
+      /**
+       * \brief Set a flag that tells the `computeError` function to treat the 0th vertex as a VertexSE3ExpMap and
+       * therefore not invert the rotation matrix before multiplying by the direction vector.
+       */
+      void setOdometryIsVertexSE3Expmap() { _odometry_is_se3_expmap = true; }
 
-		Eigen::Vector3d direction = _measurement.head<3>();
-		Eigen::Vector3d measurement = _measurement.tail<3>();
+      // return the error estimate as a 3-vector
+      void computeError(){
+          Eigen::Vector3d direction = _measurement.head<3>();
+          Eigen::Vector3d measurement = _measurement.tail<3>();
 
-		// Note: while the name is not very intuitive, .linear() extracts the rotation part of the transform (assuming the transform contains only rotation and translation)
-		// estimate contains the up vector measured in the phone frame
-		Eigen::Vector3d estimate = v1->estimate().linear().transpose() * direction;
-		_error = estimate - measurement;
+          auto v1_before_cast = _vertices[0];
 
-		/*printf("%d : measured=%f %f %f est=%f %f %f error=%f %f %f\n", v1->id(),
-		  measurement[0], measurement[1], measurement[2],
-		  estimate[0], estimate[1], estimate[2],
-		  _error[0], _error[1], _error[2]);*/
+          if (_odometry_is_se3_expmap) {
+              const g2o::VertexSE3Expmap* v1_se3_expmap = static_cast<const g2o::VertexSE3Expmap*>(v1_before_cast);
+              Eigen::Vector3d estimate = v1_se3_expmap->estimate().rotation().matrix() * direction;
+              _error = estimate - measurement;
+          } else {  // Assume it is a g2o::VertexSE3 instance
+              const g2o::VertexSE3* v1_se3 = static_cast<const g2o::VertexSE3*>(v1_before_cast);
+
+              // Note: while the name is not very intuitive, .linear() extracts the rotation part of the transform
+              // (assuming the transform contains only rotation and translation)
+              // estimate contains the up vector measured in the phone frame
+              Eigen::Vector3d estimate = v1_se3->estimate().linear().transpose() * direction;
+              _error = estimate - measurement;
+          }
     }
 
     // 6 values:
@@ -74,5 +92,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     	_measurement.head<3>() = m.head<3>().normalized();
         _measurement.tail<3>() = m.tail<3>().normalized();
     }
+
+  protected:
+      bool _odometry_is_se3_expmap = false;
   };
 #endif
